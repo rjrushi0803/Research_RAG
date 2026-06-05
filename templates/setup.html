@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Setup — Research RAG{% endblock %}
+
+{% block content %}
+<div class="setup-wizard">
+    <div class="page-header text-center">
+        <h1>Setup New Domain</h1>
+        <p>Configure your research area in 3 simple steps</p>
+    </div>
+
+    <div class="step-indicator">
+        <div class="step-dot active" data-step="1"></div>
+        <div class="step-dot" data-step="2"></div>
+        <div class="step-dot" data-step="3"></div>
+    </div>
+
+    <form id="setupForm" method="POST" action="/setup">
+        <!-- Step 1: Domain Info -->
+        <div class="step active" data-step="1">
+            <div class="card">
+                <h3 class="card-title mb-2">📋 Domain Information</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Domain Name *</label>
+                    <input type="text" name="domain_name" class="form-input" required
+                           placeholder="e.g., machine-learning, genomics, quantum-computing"
+                           pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, hyphens, underscores">
+                    <div class="form-hint">Use lowercase with hyphens. This becomes your workspace folder name.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Keywords (5 recommended) *</label>
+                    <input type="text" name="keywords" class="form-input" required
+                           placeholder="transformer, attention mechanism, LLM, fine-tuning, RLHF">
+                    <div class="form-hint">Comma-separated keywords for paper discovery</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Custom Publication URL (optional)</label>
+                    <input type="url" name="custom_source_url" class="form-input"
+                           placeholder="https://example-journal.org">
+                    <div class="form-hint">If you have a specific journal or publication source</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fetch papers from date (optional)</label>
+                    <input type="date" name="start_date" class="form-input">
+                    <div class="form-hint">Default: 1 year ago from today</div>
+                </div>
+            </div>
+
+            <div class="step-nav">
+                <div></div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Sources -->
+        <div class="step" data-step="2">
+            <div class="card">
+                <h3 class="card-title mb-2">🌐 Publication Sources</h3>
+                <p class="text-muted" style="font-size:0.85rem;margin-bottom:1rem">
+                    Select which open-access sources to fetch papers from
+                </p>
+
+                <div class="source-toggles">
+                    <label class="source-toggle active">
+                        <input type="checkbox" name="sources" value="arxiv" checked>
+                        <span>📄 arXiv</span>
+                    </label>
+                    <label class="source-toggle active">
+                        <input type="checkbox" name="sources" value="semantic_scholar" checked>
+                        <span>🔍 Semantic Scholar</span>
+                    </label>
+                    <label class="source-toggle active">
+                        <input type="checkbox" name="sources" value="pubmed" checked>
+                        <span>🏥 PubMed</span>
+                    </label>
+                    <label class="source-toggle active">
+                        <input type="checkbox" name="sources" value="openalex" checked>
+                        <span>📊 OpenAlex</span>
+                    </label>
+                    <label class="source-toggle">
+                        <input type="checkbox" name="sources" value="core">
+                        <span>📚 CORE</span>
+                    </label>
+                </div>
+
+                <div class="form-group mt-2" id="coreKeyGroup" style="display:none">
+                    <label class="form-label">CORE API Key</label>
+                    <input type="text" name="core_api_key" class="form-input"
+                           placeholder="Get free key from core.ac.uk">
+                    <div class="form-hint">Required for CORE source. Free registration at core.ac.uk/services/api</div>
+                </div>
+            </div>
+
+            <div class="step-nav">
+                <button type="button" class="btn btn-secondary" onclick="nextStep(1)">← Back</button>
+                <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: LLM Config -->
+        <div class="step" data-step="3">
+            <div class="card">
+                <h3 class="card-title mb-2">🤖 LLM Configuration</h3>
+                <p class="text-muted" style="font-size:0.85rem;margin-bottom:1rem">
+                    Choose your LLM provider for summaries and chat
+                </p>
+
+                <div class="provider-grid" id="providerGrid">
+                    <div class="provider-card" data-provider="ollama" onclick="selectProvider('ollama')">
+                        <div class="provider-icon">🦙</div>
+                        <div class="provider-name">Ollama (Local)</div>
+                    </div>
+                    <div class="provider-card" data-provider="openai" onclick="selectProvider('openai')">
+                        <div class="provider-icon">🟢</div>
+                        <div class="provider-name">OpenAI</div>
+                    </div>
+                    <div class="provider-card" data-provider="anthropic" onclick="selectProvider('anthropic')">
+                        <div class="provider-icon">🟠</div>
+                        <div class="provider-name">Anthropic</div>
+                    </div>
+                    <div class="provider-card" data-provider="google" onclick="selectProvider('google')">
+                        <div class="provider-icon">🔵</div>
+                        <div class="provider-name">Google Gemini</div>
+                    </div>
+                    <div class="provider-card" data-provider="qwen" onclick="selectProvider('qwen')">
+                        <div class="provider-icon">🟣</div>
+                        <div class="provider-name">Qwen</div>
+                    </div>
+                    <div class="provider-card" data-provider="mistral" onclick="selectProvider('mistral')">
+                        <div class="provider-icon">🔴</div>
+                        <div class="provider-name">Mistral</div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="llm_provider" id="llmProvider">
+
+                <div id="apiKeyGroup" class="form-group mt-2 hidden">
+                    <label class="form-label">API Key *</label>
+                    <input type="password" name="api_key" class="form-input" id="apiKeyInput"
+                           placeholder="Enter your API key">
+                </div>
+
+                <div id="ollamaGroup" class="mt-2 hidden">
+                    <div class="form-group">
+                        <label class="form-label">Ollama Base URL</label>
+                        <input type="text" name="ollama_base_url" class="form-input"
+                               value="http://localhost:11434" placeholder="http://localhost:11434">
+                    </div>
+                    <div id="ollamaModels"></div>
+                    <div class="alert alert-info mt-1">
+                        <strong>Resource Guide:</strong> Check Ollama model requirements below
+                    </div>
+                    <table class="resource-table">
+                        <thead><tr><th>Size</th><th>RAM</th><th>VRAM</th><th>CPU</th><th>Notes</th></tr></thead>
+                        <tbody>
+                            <tr><td>1B-3B</td><td>4-6 GB</td><td>2-4 GB</td><td>4+ cores</td><td>Runs on most machines</td></tr>
+                            <tr><td>7B</td><td>8-10 GB</td><td>6-8 GB</td><td>4+ cores</td><td>Recommended minimum</td></tr>
+                            <tr><td>13B</td><td>16-20 GB</td><td>10-16 GB</td><td>8+ cores</td><td>Good quality</td></tr>
+                            <tr><td>30B-34B</td><td>32-40 GB</td><td>24-32 GB</td><td>8+ cores</td><td>Needs powerful GPU</td></tr>
+                            <tr><td>70B</td><td>64+ GB</td><td>48+ GB</td><td>16+ cores</td><td>Enterprise hardware</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mt-2">
+                    <label class="form-label">Model Name *</label>
+                    <input type="text" name="model_name" class="form-input" id="modelNameInput"
+                           placeholder="e.g., gpt-4o-mini, llama3.1, gemini-2.0-flash">
+                    <div class="form-hint">Enter the model identifier for your chosen provider</div>
+                </div>
+            </div>
+
+            <div class="step-nav">
+                <button type="button" class="btn btn-secondary" onclick="nextStep(2)">← Back</button>
+                <button type="submit" class="btn btn-primary btn-lg">🚀 Create Domain</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/setup.js') }}"></script>
+{% endblock %}

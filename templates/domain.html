@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ domain.domain_name }} — Research RAG{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ domain.domain_name }}</h1>
+    <p>Keywords: {{ domain.keywords | join(', ') }}</p>
+</div>
+
+<div class="domain-layout">
+    <!-- Left: Summaries -->
+    <div class="summaries-panel">
+        <div class="card-header">
+            <h3 class="card-title">📄 Paper Summaries</h3>
+            <span class="badge badge-accent">Last 2 days</span>
+        </div>
+
+        {% if summaries %}
+            {% for date, papers in summaries.items() %}
+            <div class="summary-date">📅 {{ date }}</div>
+            {% for paper in papers %}
+            <div class="summary-card">
+                <h4>
+                    {% if paper.source_url %}
+                    <a href="{{ paper.source_url }}" target="_blank">{{ paper.title }}</a>
+                    {% else %}
+                    {{ paper.title }}
+                    {% endif %}
+                </h4>
+                <div class="summary-section">
+                    <strong>Summary:</strong> {{ paper.abstract_summary }}
+                </div>
+                <div class="summary-section">
+                    <strong>Methodology:</strong> {{ paper.methodology }}
+                </div>
+                <div class="summary-section">
+                    <strong>Key Results:</strong> {{ paper.key_results }}
+                </div>
+                <div class="mt-1">
+                    <span class="badge badge-accent">{{ paper.source_name }}</span>
+                    <span class="text-muted" style="font-size:0.7rem;margin-left:8px">{{ paper.published_date }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding:2rem">
+            <div class="icon">📝</div>
+            <h3>No summaries yet</h3>
+            <p>Fetch papers first, then summaries will appear here</p>
+            <a href="/fetch/{{ domain.domain_name }}" class="btn btn-primary btn-sm">⚡ Fetch Now</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: Chat -->
+    <div class="chat-panel">
+        <div class="chat-header">
+            <h3>💬 Research Chat</h3>
+            <span class="badge badge-success" id="chatStatus">Ready</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message system">
+                Ask questions about your research papers. Type <strong>exit()</strong> to end the session.
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span><span></span><span></span>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask about your research papers..."
+                   autocomplete="off" autofocus>
+            <button onclick="sendMessage()" id="sendBtn">➤</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const DOMAIN_NAME = "{{ domain.domain_name }}";
+</script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

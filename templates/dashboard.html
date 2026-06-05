@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Research RAG{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Research Domains</h1>
+    <p>Your AI-powered research paper discovery hub</p>
+</div>
+
+{% if domains %}
+<div class="grid grid-2">
+    {% for domain in domains %}
+    <div class="card domain-card" id="domain-{{ domain.domain_name }}">
+        <div class="card-header">
+            <div class="flex gap-1" style="align-items:center">
+                <div class="domain-icon">📚</div>
+                <div>
+                    <div class="card-title">{{ domain.domain_name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem">Since {{ domain.setup_date[:10] }}</div>
+                </div>
+            </div>
+            <span class="badge badge-success">Active</span>
+        </div>
+
+        <div class="domain-keywords">
+            {% for kw in domain.keywords %}
+            <span class="badge badge-accent">{{ kw }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="domain-stats">
+            <div class="stat">
+                <div class="stat-value">{{ paper_counts.get(domain.domain_name, 0) }}</div>
+                <div class="stat-label">Papers</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ summary_counts.get(domain.domain_name, 0) }}</div>
+                <div class="stat-label">Summaries</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ domain.sources|length }}</div>
+                <div class="stat-label">Sources</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/domain/{{ domain.domain_name }}" class="btn btn-primary btn-sm">Open</a>
+            <a href="/fetch/{{ domain.domain_name }}" class="btn btn-secondary btn-sm"
+               onclick="return confirm('Start fetching papers now?')">⚡ Fetch Now</a>
+            <a href="/llm-setup/{{ domain.domain_name }}" class="btn btn-secondary btn-sm">⚙️ LLM</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">🔬</div>
+    <h3>No domains configured yet</h3>
+    <p>Set up your first research domain to start discovering papers</p>
+    <a href="/setup" class="btn btn-primary btn-lg">+ Create Domain</a>
+</div>
+{% endif %}
+{% endblock %}

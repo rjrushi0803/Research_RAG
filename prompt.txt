@@ -1,0 +1,51 @@
+I want to create a production grade RAG project for the research community
+
+AIM:
+RAG system which will fetch the very recent or research papers from user defined time stampt from the open source best publications, and provide a summary of the abstract, methodology and results.
+
+INTRODUCTION:
+Research and technology is moving very fast and keep up with the pace of it is very difficult for the researchers.
+I want to createa python based RAG system na dflask based UI for the user which will fetch the relevent research paper from the best open source publications and give summary of it.
+
+WORKFLOW:
+this will be one time setup tool for the specific domain of the researcher, this will work in the following way:
+
+1. at the very initial get the necessory info from the user
+a. domain name 
+b. 5 kaywords of are of interest or work domain
+c. link to the specific preffered pubication house (optional)
+d. time stamp to fetch the related research papers(optinal)
+
+2. now based on the information and keywords given by user fetch the related docs from the user given publication house and time stamp.
+a. if pubication house is not given by the user then fetch from the predefined best 5
+b. if timestamp is not given by the user then fetch papers pulished within 1 year from the day of initial setup.
+c. this should fetch relevant docs to the keywords provided everyday at TIME=6AM from the date of setup.
+d. the day no documents are found do nothing.
+c. remove the duplicate documents.
+d. store these docs under ./data/docs
+
+3. now set up the LLM for embeddings, summary and chat by the user.
+a. ask the user through UI whether to use LLM on local using "ollama" or OpenAI,Anthropic,Google,Qwen,Mistarl and get the API key for them.
+b. after llm provider ask which LLM model to use 
+c. If LLMs are running using ollama show ram/cpu/gpu requirement guidelines based on the parameter count of the LLM.
+
+4. now get the embeddings from the docs and and store in vector DB
+a. get good quality industry standard embeddings of the docs fetched everyday
+c. store/add it very memory efficiently in the vector DB like done in the industry.
+d. vector DB should be located at ./data/DB.
+
+5. with the help of summary LLM and this fetched document show the paper name and summary for the day 
+a. in UI show diiferent different paper names fetched for the day and summary of each for the perticular day.
+c. show summaries for the last two dayas in the UI and automatically remove older than 3 days.
+
+5. set up the good quality retriver to get and rank the fetched relevent document from the DB
+a. now everyday at TIME fetched docs are save in the vector DB so we have huge knowledge base.
+b. now if user wants to chat to design new research protocol or any other query based on the domain. make embeddings of the query and get the relevant documents.
+c based on the relevant documents answer the questions to the user. if documents are not found say "I dont have reference to your query so I don't know".
+d. add session memory for perticular chat so that answers are relevant to the previous queries as well.
+e. keep chatting until user sends "exit()" message.
+
+6. show all of this in a falsk UI which will be continuesly running on the local host
+a. user can define multiple domains and data and embeddings and 3 days summaries will be stored under the domain name
+b. in UI -all the domain wise summary and chat option inside the domain will be shown.
+

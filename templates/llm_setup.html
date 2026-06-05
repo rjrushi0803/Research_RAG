@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}LLM Setup — {{ domain.domain_name }}{% endblock %}
+
+{% block content %}
+<div class="setup-wizard">
+    <div class="page-header text-center">
+        <h1>LLM Configuration</h1>
+        <p>Update LLM settings for <strong>{{ domain.domain_name }}</strong></p>
+    </div>
+
+    <form method="POST" action="/llm-setup/{{ domain.domain_name }}">
+        <div class="card">
+            <h3 class="card-title mb-2">🤖 Choose Provider</h3>
+
+            <div class="provider-grid" id="providerGrid">
+                {% set current = domain.llm_config.get('provider', '') if domain.llm_config else '' %}
+                {% for pid, pinfo in providers.items() %}
+                <div class="provider-card {% if pid == current %}selected{% endif %}"
+                     data-provider="{{ pid }}" onclick="selectProvider('{{ pid }}')">
+                    <div class="provider-icon">
+                        {% if pid == 'ollama' %}🦙{% elif pid == 'openai' %}🟢{% elif pid == 'anthropic' %}🟠{% elif pid == 'google' %}🔵{% elif pid == 'qwen' %}🟣{% elif pid == 'mistral' %}🔴{% endif %}
+                    </div>
+                    <div class="provider-name">{{ pinfo.name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <input type="hidden" name="llm_provider" id="llmProvider" value="{{ current }}">
+
+            <div id="apiKeyGroup" class="form-group mt-2 {% if not current or current == 'ollama' %}hidden{% endif %}">
+                <label class="form-label">API Key</label>
+                <input type="password" name="api_key" class="form-input" id="apiKeyInput"
+                       value="{{ domain.llm_config.get('api_key', '') if domain.llm_config else '' }}">
+            </div>
+
+            <div id="ollamaGroup" class="mt-2 {% if current != 'ollama' %}hidden{% endif %}">
+                <div class="form-group">
+                    <label class="form-label">Ollama Base URL</label>
+                    <input type="text" name="ollama_base_url" class="form-input"
+                           value="{{ domain.llm_config.get('base_url', 'http://localhost:11434') if domain.llm_config else 'http://localhost:11434' }}">
+                </div>
+            </div>
+
+            <div class="form-group mt-2">
+                <label class="form-label">Model Name</label>
+                <input type="text" name="model_name" class="form-input"
+                       value="{{ domain.llm_config.get('model_name', '') if domain.llm_config else '' }}"
+                       placeholder="e.g., gpt-4o-mini, llama3.1">
+            </div>
+        </div>
+
+        <div class="step-nav mt-2">
+            <a href="/domain/{{ domain.domain_name }}" class="btn btn-secondary">← Back</a>
+            <button type="submit" class="btn btn-primary">💾 Save Configuration</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/setup.js') }}"></script>
+{% endblock %}
